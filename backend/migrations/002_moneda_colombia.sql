@@ -1,7 +1,7 @@
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM listings WHERE currency NOT IN ('COP', 'USD')) THEN
-    RAISE EXCEPTION 'Hay avisos en monedas no soportadas (CLP/UF). Elimínalos o conviértelos antes de migrar.';
+    RAISE EXCEPTION 'Hay avisos en monedas no soportadas. Elimínalos o conviértelos antes de migrar.';
   END IF;
 END $$;
 
