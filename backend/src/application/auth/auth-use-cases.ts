@@ -7,13 +7,13 @@ import type {
   SessionUser,
   User,
   UserRepository,
-} from '../domain/auth-contracts.js';
+} from '../../domain/auth-contracts.js';
 
 import {
   ConflictError,
   NotFoundError,
   UnauthorizedError,
-} from '../errors/app-errors.js';
+} from '../../errors/app-errors.js';
 
 
 export interface Session {
