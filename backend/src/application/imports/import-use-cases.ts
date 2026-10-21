@@ -7,9 +7,9 @@ import {
   type ImportJob as ImportJobDto,
   type ImportRowErrorDto,
 } from '@portal/shared';
-import type { ImportJob, ImportJobRepository, ImportQueue } from '';
-import { ForbiddenError, NotFoundError } from '';
-import type { ObjectStorage } from ';
+import type { ImportJob, ImportJobRepository, ImportQueue } from '../../domain/import/import-job';
+import { ForbiddenError, NotFoundError } from '../../domain/shared/errors';
+import type { ObjectStorage } from '../../domain/shared/ports';
 
 export const toImportJobDto = (job: ImportJob): ImportJobDto => ({
   id: job.id,

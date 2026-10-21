@@ -1,5 +1,5 @@
-import type { ListingCursor }from '';
-import { ValidationError }from '';
+import type { ListingCursor } from '../../domain/listing/listing';
+import { ValidationError } from '../../domain/shared/errors';
 
 /** Cursor opaco para el cliente: base64url de { c: created_at, i: id }. */
 export function encodeCursor(cursor: ListingCursor): string {

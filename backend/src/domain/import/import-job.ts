@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream';
 import type { ImportStatus } from '@portal/shared';
-import type { ListingDraft } from '../listing/listing';
+import type { ListingDraft } from '../listing/listing.js';
 
 export interface ImportJob {
   id: string;

@@ -1,19 +1,8 @@
-import type {
-  AccessTokenService,
-  LoginRequest,
-  PasswordHasher,
-  RefreshTokenStore,
-  RegisterRequest,
-  SessionUser,
-  User,
-  UserRepository,
-} from '../../domain/auth-contracts.js';
+import type { LoginRequest, RegisterRequest, SessionUser } from '@portal/shared';
+import type { AccessTokenService, PasswordHasher, RefreshTokenStore } from '../../domain/auth/ports';
+import type { User, UserRepository } from '../../domain/auth/user';
+import { ConflictError, NotFoundError, UnauthorizedError } from '../../domain/shared/errors';
 
-import {
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from '../../errors/app-errors.js';
 
 
 export interface Session {
