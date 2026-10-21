@@ -6,8 +6,8 @@ import {
   type SearchListingsQuery,
   type UpdateListingRequest,
 } from '@portal/shared';
-import type { Listing, ListingRepository, ListingTileSource } from '';
-import { ForbiddenError, NotFoundError, ValidationError } from '';
+import type { Listing, ListingRepository, ListingTileSource } from '../../domain/listing/listing';
+import { ForbiddenError, NotFoundError, ValidationError } from '../../domain/shared/errors';
 import { decodeCursor, encodeCursor } from './cursor';
 
 export const toListingDto = (l: Listing): ListingDto => ({

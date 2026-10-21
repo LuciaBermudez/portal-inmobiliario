@@ -5,9 +5,9 @@ import {
   type Notification,
   type Zone as ZoneDto,
 } from '@portal/shared';
-import type { NotificationRepository, Zone, ZoneRepository } from '';
-import { ForbiddenError, NotFoundError } from '';
-import type { EventPublisher, Logger, Mailer } from '';
+import type { NotificationRepository, Zone, ZoneRepository } from '../../domain/alert/zone';
+import { ForbiddenError, NotFoundError } from '../../domain/shared/errors';
+import type { EventPublisher, Logger, Mailer } from '../../domain/shared/ports';
 
 const MAX_ZONES_PER_USER = 20;
 

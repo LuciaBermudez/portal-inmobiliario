@@ -1,5 +1,5 @@
 import { CsvListingRowSchema, type CsvListingRow } from '@portal/shared';
-import type { AlertQueue } from '';
+import type { AlertQueue } from '../../domain/alert/zone';
 import {
   isFinished,
   type ImportBatch,
@@ -7,10 +7,10 @@ import {
   type ImportJobRepository,
   type ImportRowError,
   type TabularReader,
-} from '';
-import type { ListingDraft } from '';
-import { NotFoundError } from '';
-import type { EventPublisher, Logger, ObjectStorage } from '';
+} from '../../domain/import/import-job';
+import type { ListingDraft } from '../../domain/listing/listing';
+import { NotFoundError } from '../../domain/shared/errors';
+import type { EventPublisher, Logger, ObjectStorage } from '../../domain/shared/ports';
 import { toImportJobDto } from './import-use-cases';
 
 export interface ProcessImportDeps {
