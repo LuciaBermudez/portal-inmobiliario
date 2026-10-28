@@ -3,8 +3,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { pool } from './infrastructure/database/pool.js';
+import { createPool } from './infrastructure/db/pool.js';
 
+const pool = createPool(process.env.DATABASE_URL ?? '');
 const app = express();
 
 app.disable('x-powered-by');

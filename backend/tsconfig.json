@@ -1,17 +1,22 @@
 {
+  
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "rootDir": "src",
+    "rootDir": "..",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "types": ["node"]
+    "exactOptionalPropertyTypes": false,
+    "types": ["node"],
+    "paths": {
+    "@portal/shared": ["../shared/src/index.ts"]
+}
+    
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "tests"]
