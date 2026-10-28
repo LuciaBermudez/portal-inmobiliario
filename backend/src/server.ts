@@ -1,9 +1,11 @@
-import 'dotenv/config';
 
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { pool } from './infrastructure/database/pool.js';
+import { loadEnv } from './config/env.js';
+
+const env = loadEnv();
+const { pool } = await import('./infrastructure/database/pool.js');
 
 const app = express();
 
@@ -12,7 +14,7 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:5173',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   }),
 );
@@ -47,8 +49,6 @@ app.use((_req, res) => {
   });
 });
 
-const port = Number(process.env.PORT ?? 3000);
-
-app.listen(port, () => {
-  console.log(`API disponible en el puerto ${port}`);
+app.listen(env.PORT, () => {
+  console.log(`API disponible en el puerto ${env.PORT}`);
 });
