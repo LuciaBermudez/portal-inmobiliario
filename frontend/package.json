@@ -29,7 +29,7 @@
     "vue-tsc": "^3.3.13"
   },
   "dependencies": {
-    "@portal/shared": "*",
+    "@portal/shared": "file:../shared",
     "@tanstack/vue-virtual": "^3.13.45",
     "maplibre-gl": "^6.14.0",
     "pinia": "^4.0.3",
