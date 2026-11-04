@@ -11,6 +11,7 @@ const form = reactive({ email: '', password: '' });
 async function submit() {
   if (await auth.login(form)) {
     const redirect = typeof route.query['redirect'] === 'string' ? route.query['redirect'] : '/';
+    // Solo rutas internas: evita redirecciones abiertas a otros dominios.
     await router.replace(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/');
   }
 }

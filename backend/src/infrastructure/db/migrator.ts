@@ -1,12 +1,14 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type pg from 'pg';
+import type { Pool } from './pool';
 
-/** Lock de Postgres: dos procesos nunca migran a la vez. */
-const LOCK_ID = 727001;
+const LOCK_ID = 727_001;
 
-/** Aplica en orden los .sql de `dir` que aún no estén en schema_migrations, cada uno en su transacción. */
-export async function runMigrations(pool: pg.Pool, dir: string): Promise<string[]> {
+/**
+ * Migrador SQL mínimo: aplica en orden los .sql pendientes, cada uno en su transacción.
+ * Un advisory lock evita que dos instancias migren a la vez (p. ej. varios deploys en paralelo).
+ */
+export async function runMigrations(pool: Pool, dir: string): Promise<string[]> {
   const client = await pool.connect();
   const applied: string[] = [];
   try {

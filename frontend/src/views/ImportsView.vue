@@ -9,6 +9,7 @@ const imports = useImportsStore();
 const toasts = useToastStore();
 
 const file = ref<File | null>(null);
+/** Se genera al elegir el archivo y se reutiliza en reintentos → el servidor nunca crea dos jobs. */
 const idempotencyKey = ref<string | null>(null);
 const expanded = ref<string | null>(null);
 

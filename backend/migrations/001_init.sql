@@ -17,6 +17,7 @@ CREATE TABLE users (
   CONSTRAINT agent_needs_agency CHECK (role <> 'agent' OR agency_id IS NOT NULL)
 );
 
+-- Refresh tokens: solo se guarda el hash SHA-256. family_id agrupa las rotaciones de una sesión.
 CREATE TABLE refresh_tokens (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -80,7 +81,7 @@ CREATE TABLE listings (
   import_job_id  uuid REFERENCES import_jobs(id) ON DELETE SET NULL,
   created_at     timestamptz NOT NULL DEFAULT now(),
   updated_at     timestamptz NOT NULL DEFAULT now(),
- 
+  -- Clave natural del upsert de la ingesta: re-importar el mismo archivo es idempotente.
   CONSTRAINT listings_agency_external UNIQUE (agency_id, external_id)
 );
 CREATE INDEX listings_geom_idx ON listings USING gist (geom);
@@ -107,7 +108,7 @@ CREATE TABLE notifications (
   created_at   timestamptz NOT NULL DEFAULT now(),
   read_at      timestamptz,
   digested_at  timestamptz,
-  
+  -- Garantía de "exactamente una notificación por aviso y zona" aunque el job se reintente.
   CONSTRAINT notifications_once UNIQUE (zone_id, listing_id)
 );
 CREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);

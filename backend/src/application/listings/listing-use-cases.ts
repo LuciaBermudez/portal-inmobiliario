@@ -63,6 +63,7 @@ export class UpdateListing {
   async execute(actor: Actor, id: string, request: UpdateListingRequest): Promise<ListingDto> {
     const listing = await this.listings.findById(id);
     if (!listing) throw new NotFoundError('Aviso no encontrado');
+    // ABAC: el atributo agencyId no es editable, así que comprobarlo antes del UPDATE no abre una carrera.
     if (!canEditListing(actor, listing)) {
       throw new ForbiddenError('Solo puedes editar avisos de tu inmobiliaria');
     }

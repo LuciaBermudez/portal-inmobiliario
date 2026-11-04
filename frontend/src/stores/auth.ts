@@ -4,7 +4,11 @@ import { computed, ref } from 'vue';
 import { authApi } from '@/api/auth';
 import { messageOf } from '@/api/http';
 
-
+/**
+ * Sesión con doble token:
+ *  - access token: SOLO en memoria (este store). Nunca en localStorage → inaccesible tras recargar o por XSS persistente.
+ *  - refresh token: cookie HttpOnly gestionada por el navegador; recargar la página recupera la sesión con /auth/refresh.
+ */
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null);
   const user = ref<SessionUser | null>(null);
@@ -42,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   const login = (body: LoginRequest) => run(() => authApi.login(body));
   const register = (body: RegisterRequest) => run(() => authApi.register(body));
 
- 
+  /** Single-flight: N peticiones con 401 simultáneas comparten UN solo refresh (el servidor rota el token). */
   function refresh(): Promise<string | null> {
     refreshing ??= authApi
       .refresh()
@@ -60,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
     return refreshing;
   }
 
- 
+  /** Lo llama el guard de navegación una vez por carga de página. */
   function ensureSession(): Promise<boolean> {
     bootstrap ??= accessToken.value ? Promise.resolve(true) : refresh().then((token) => token !== null);
     return bootstrap;

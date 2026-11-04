@@ -17,6 +17,7 @@ const zones = useZonesStore();
 const auth = useAuthStore();
 const router = useRouter();
 
+/** Cantidad cargada; con "+" si quedan más páginas por traer (paginación por cursor). */
 const countLabel = computed(() => `${listings.results.length}${listings.hasMore ? '+' : ''}`);
 
 onMounted(() => {

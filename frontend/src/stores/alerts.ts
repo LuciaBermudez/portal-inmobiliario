@@ -8,7 +8,7 @@ export const useZonesStore = defineStore('zones', () => {
   const zones = ref<Zone[]>([]);
   const status = ref<AsyncStatus>('idle');
   const error = ref<string | null>(null);
-
+  /** Polígono dibujado en la búsqueda que el usuario quiere convertir en alerta. */
   const draftPolygon = ref<GeoJsonPolygon | null>(null);
 
   async function fetchAll() {
@@ -30,6 +30,7 @@ export const useZonesStore = defineStore('zones', () => {
     return zone;
   }
 
+  /** Borrado optimista: se quita de la UI al instante y se restaura si el servidor falla. */
   async function remove(id: string) {
     const previous = zones.value;
     zones.value = zones.value.filter((z) => z.id !== id);
