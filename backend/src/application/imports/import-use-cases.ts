@@ -33,7 +33,10 @@ export interface CreateImportInput {
   file: Readable;
 }
 
-
+/**
+ * Recibe el CSV en streaming, lo guarda y encola el procesamiento.
+ * La petición HTTP responde 202 en cuanto el archivo está guardado: nada se procesa en el request.
+ */
 export class CreateImport {
   constructor(
     private readonly jobs: ImportJobRepository,
@@ -45,13 +48,15 @@ export class CreateImport {
   async execute(input: CreateImportInput): Promise<{ job: ImportJobDto; created: boolean }> {
     const { actor } = input;
     if (!canImportListings(actor) || actor.agencyId === null) {
-      input.file.resume();
+      input.file.resume(); // drena el stream para no bloquear la petición
       throw new ForbiddenError('Necesitas ser agente o admin de una inmobiliaria para importar');
     }
 
+    // Idempotencia: reintentos (doble clic, red inestable) devuelven el mismo job.
     const existing = await this.jobs.findByIdempotencyKey(actor.id, input.idempotencyKey);
     if (existing) {
       input.file.resume();
+      // Si el encolado falló la primera vez, reintentarlo es seguro (jobId único en la cola).
       if (existing.status === 'queued') await this.queue.enqueue(existing.id);
       return { job: toImportJobDto(existing), created: false };
     }

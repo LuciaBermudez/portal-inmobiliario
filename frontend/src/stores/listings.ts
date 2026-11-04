@@ -30,7 +30,10 @@ const PAGE_SIZE = 30;
 const SNAPSHOT_KEY = 'portal:last-search';
 const FAVORITES_KEY = 'portal:favorites';
 
-
+/**
+ * Estado normalizado: `byId` es la única fuente de verdad de cada aviso; las vistas
+ * guardan solo ids (resultados, favoritos). Editar un aviso lo actualiza en todas partes.
+ */
 export const useListingsStore = defineStore('listings', () => {
   const byId = ref<Record<string, Listing>>({});
   const resultIds = ref<string[]>([]);
@@ -76,7 +79,7 @@ export const useListingsStore = defineStore('listings', () => {
       writeJson(SNAPSHOT_KEY, { items: page.items, savedAt: new Date().toISOString() } satisfies SearchSnapshot);
     } catch (e) {
       if (seq !== requestSeq) return;
-      
+      // Modo offline: mostramos la última búsqueda exitosa en lugar de una pantalla de error.
       const snapshot = readJson<SearchSnapshot | null>(SNAPSHOT_KEY, null);
       if (!navigator.onLine && snapshot) {
         upsert(snapshot.items);

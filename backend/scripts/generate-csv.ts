@@ -1,3 +1,11 @@
+/**
+ * Genera un CSV de prueba (datos FICTICIOS) para la carga masiva, ubicado en Cali, Colombia.
+ *   npm run generate:csv -w @portal/backend -- 100000 uploads/listings-100k.csv
+ *
+ * Cada aviso se ubica alrededor del centro aproximado de un barrio real (±~700 m), para que los
+ * puntos caigan en zona urbana y no en los cerros. ~1% de filas son inválidas a propósito,
+ * para ver el reporte de errores por fila.
+ */
 import { createWriteStream } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';

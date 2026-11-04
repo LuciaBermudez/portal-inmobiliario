@@ -3,6 +3,7 @@ import { loadEnv } from '../config/env';
 import { createPool } from '../infrastructure/db/pool';
 import { Argon2PasswordHasher } from '../infrastructure/security/argon2-password-hasher';
 
+/** Datos demo SOLO para desarrollo. La contraseña viene de SEED_PASSWORD (.env). */
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('El seed no se ejecuta en producción');
 

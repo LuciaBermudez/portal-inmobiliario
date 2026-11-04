@@ -1,17 +1,13 @@
-# Dependencias
 node_modules/
-
-# Variables de entorno y secretos
+dist/
+dev-dist/
+coverage/
+playwright-report/
+test-results/
+*.log
 .env
 .env.*
 !.env.example
-
-# Archivos generados
-dist/
-coverage/
-*.log
-
-# Sistema operativo y editor
+backend/uploads/*
+!backend/uploads/.gitkeep
 .DS_Store
-Thumbs.db
-.vscode/

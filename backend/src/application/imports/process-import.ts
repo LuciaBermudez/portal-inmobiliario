@@ -24,6 +24,7 @@ export interface ProcessImportDeps {
 }
 
 export interface ProcessImportOptions {
+  /** En el último reintento un error marca el job como fallido; antes, se deja reintentar. */
   isFinalAttempt: boolean;
 }
 
@@ -42,6 +43,7 @@ const toDraft = (row: CsvListingRow): ListingDraft => ({
   location: { lng: row.lng, lat: row.lat },
 });
 
+/** Acumula filas válidas e inválidas de un lote. Deduplica por external_id dentro del lote. */
 class BatchBuilder {
   private readonly rows = new Map<string, { rowNumber: number; draft: ListingDraft; raw: Record<string, string> }>();
   private readonly errors: ImportRowError[] = [];
@@ -59,7 +61,7 @@ class BatchBuilder {
       this.errors.push({ rowNumber, message, raw });
       return;
     }
-
+    // Un mismo external_id dos veces en un lote rompería el upsert (ON CONFLICT no puede tocar una fila dos veces).
     const previous = this.rows.get(parsed.data.external_id);
     if (previous) {
       this.errors.push({
@@ -81,8 +83,11 @@ class BatchBuilder {
   }
 }
 
-
-
+/**
+ * Pipeline de ingesta masiva (corre en el worker):
+ * stream del archivo → validación por fila → lotes → upsert transaccional → progreso en vivo → alertas.
+ * Es idempotente y reanudable: si el worker cae, el reintento continúa desde `lastCommittedRow`.
+ */
 export class ProcessImport {
   constructor(private readonly deps: ProcessImportDeps) {}
 
@@ -90,7 +95,7 @@ export class ProcessImport {
     const { jobs, logger } = this.deps;
     const found = await jobs.findById(jobId);
     if (!found) throw new NotFoundError(`La importación ${jobId} no existe`);
-    if (isFinished(found)) return found; 
+    if (isFinished(found)) return found; // reentrega de la cola: no se procesa dos veces
 
     let job = await jobs.markProcessing(jobId);
     await this.publish(job);
@@ -132,6 +137,7 @@ export class ProcessImport {
 
   private async flush(job: ImportJob, batch: ImportBatch): Promise<ImportJob> {
     const result = await this.deps.jobs.commitBatch(job, batch);
+    // Solo los avisos NUEVOS disparan alertas por zona (los actualizados ya fueron notificados).
     if (result.insertedIds.length > 0) await this.deps.alerts.enqueueMatch(result.insertedIds);
     await this.publish(result.job);
     return result.job;
@@ -141,7 +147,8 @@ export class ProcessImport {
     try {
       await this.deps.events.publishToUser(job.userId, { name: 'import:progress', payload: toImportJobDto(job) });
     } catch (error) {
-        this.deps.logger.warn('no se pudo publicar el progreso', { jobId: job.id, error: String(error) });
+      // El progreso en vivo es best-effort: nunca debe tumbar la ingesta.
+      this.deps.logger.warn('no se pudo publicar el progreso', { jobId: job.id, error: String(error) });
     }
   }
 }

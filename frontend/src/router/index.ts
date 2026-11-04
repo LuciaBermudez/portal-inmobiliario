@@ -15,7 +15,7 @@ declare module 'vue-router' {
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
-
+    // Code splitting: cada vista se descarga solo al navegar a ella.
     { path: '/', name: 'search', component: () => import('@/views/SearchView.vue'), meta: { title: 'Buscar' } },
     {
       path: '/listings/:id',
@@ -47,7 +47,7 @@ export const router = createRouter({
   ],
 });
 
-
+/** Guard asíncrono: recupera la sesión (refresh silencioso) antes de decidir el acceso. */
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
   await auth.ensureSession();

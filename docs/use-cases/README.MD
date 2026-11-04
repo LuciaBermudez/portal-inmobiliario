@@ -1,23 +1,33 @@
-# Estrategia de pruebas
+# Casos de uso
 
-| Nivel | Herramienta | Qué cubre | Comando |
-|---|---|---|---|
-| Contratos | Vitest | Esquemas Zod y políticas ABAC compartidas | `npm test -w @portal/shared` |
-| Unitarias backend | Vitest + fakes en memoria | Casos de uso: pipeline de ingesta, auth, ABAC, cursor, **test de arquitectura** | `npm test -w @portal/backend` |
-| Integración backend | Vitest + **PostgreSQL + PostGIS reales** | SQL espacial, upsert idempotente, rollback, **concurrencia** (bloqueo optimista, rotación de refresh concurrente, resumen diario concurrente), teselas MVT | `npm run test:integration` |
-| Unitarias frontend | Vitest + happy-dom | Cliente HTTP (refresh + reintento), stores (single-flight, respuestas obsoletas, normalización, offline, eventos desordenados) | `npm test -w @portal/frontend` |
-| E2E | Playwright (desktop + móvil) | Mapa, guards de navegación, login y persistencia de sesión al recargar | `npm run test:e2e -w @portal/frontend` |
+| Caso de uso | Actor | Clase |
+|---|---|---|
+| CU-01 Registrarse | Visitante | `RegisterUser` |
+| CU-02 Iniciar sesión / refrescar / cerrar sesión | Usuario | `LoginUser`, `RefreshSession`, `Logout` |
+| CU-03 Buscar propiedades (filtros + polígono) | Cualquiera | `SearchListings` |
+| CU-04 Ver detalle de propiedad | Cualquiera | `GetListing` |
+| CU-05 Editar propiedad | Agente de la inmobiliaria, admin | `UpdateListing` |
+| CU-06 Importar catálogo CSV | Agente, admin | `CreateImport` → `ProcessImport` (worker) |
+| CU-07 Consultar importaciones y sus errores | Agente, admin | `ListImports`, `GetImport`, `ListImportErrors` |
+| CU-08 Crear / listar / borrar zona de alerta | Usuario autenticado | `CreateZone`, `ListZones`, `DeleteZone` |
+| CU-09 Notificar avisos nuevos en zonas | Sistema (worker) | `MatchNewListings` |
+| CU-10 Enviar resumen diario | Sistema (cron) | `SendDailyDigests` |
 
-## Tests de concurrencia destacados
+## CU-06 Importar catálogo CSV (detalle)
 
-- `listings.int.test.ts`: dos `UPDATE` simultáneos con la misma versión; exactamente uno gana y el otro recibe `409`.
-- `auth.int.test.ts`: dos `/refresh` simultáneos con el mismo token; uno rota y el otro dispara la revocación de la familia.
-- `auth.int.test.ts`: dos registros simultáneos con el mismo email; el índice único lo resuelve.
-- `alerts.int.test.ts`: dos resúmenes diarios concurrentes no reclaman la misma notificación.
-- `listings.int.test.ts`: un lote con progreso obsoleto hace rollback completo (no quedan avisos sueltos).
-- `postgres-infra.int.test.ts`: encolar dos veces la misma importación crea un único job (pg-boss), y un `pg_notify` del worker llega al `LISTEN` de la API.
+**Precondición:** el usuario es agente o admin de una inmobiliaria.
 
-Los tests de integración usan la base de `TEST_DATABASE_URL`. Debe ser una base dedicada, porque los tests escriben datos.
+**Flujo principal:**
 
-- **Local:** PostgreSQL instalado en Windows; `backend/scripts/setup-local-db.sql` crea `portal_test`.
-- **CI (GitHub Actions):** el job instala PostGIS en el runner y ejecuta el mismo script en cada PR.
+1. El usuario elige un CSV. La UI genera una `Idempotency-Key`.
+2. El archivo se sube mostrando el progreso de subida.
+3. La API guarda el archivo en streaming, crea el job y responde `202`.
+4. El worker procesa por lotes y la UI muestra el progreso en vivo.
+5. Al terminar, el mapa recarga sus teselas y aparece un toast.
+
+**Flujos alternativos:**
+
+- 3a. Reintento con la misma clave: se devuelve el mismo job (`200`).
+- 4a. Filas inválidas: se registran y la carga continúa.
+- 4b. El worker cae: pg-boss reintenta (con backoff) y se reanuda desde `last_committed_row`.
+- 4c. Agota los reintentos: el job queda `failed` con su mensaje.

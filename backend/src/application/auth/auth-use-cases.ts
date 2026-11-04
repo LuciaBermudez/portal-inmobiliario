@@ -3,8 +3,6 @@ import type { AccessTokenService, PasswordHasher, RefreshTokenStore } from '../.
 import type { User, UserRepository } from '../../domain/auth/user';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../domain/shared/errors';
 
-
-
 export interface Session {
   accessToken: string;
   refreshToken: string;
@@ -32,6 +30,7 @@ async function openSession({ tokens, refreshTokens }: SessionServices, user: Use
   return { accessToken, refreshToken, user: toSessionUser(user) };
 }
 
+/** El registro público siempre crea clientes; agentes y admins se crean por seed/backoffice. */
 export class RegisterUser {
   constructor(
     private readonly users: UserRepository,
@@ -52,8 +51,8 @@ export class RegisterUser {
   }
 }
 
-
 export class LoginUser {
+  /** Hash señuelo: iguala el tiempo de respuesta exista o no el email (evita enumeración de usuarios). */
   private decoyHash: Promise<string> | null = null;
 
   constructor(
@@ -75,6 +74,7 @@ export class LoginUser {
     return openSession(this.session, user);
   }
 }
+
 export class RefreshSession {
   constructor(
     private readonly users: UserRepository,

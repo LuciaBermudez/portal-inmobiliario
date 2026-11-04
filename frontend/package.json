@@ -1,0 +1,41 @@
+{
+  "name": "@portal/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^26.6.5",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/test-utils": "^2.5.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "happy-dom": "^21.0.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.4",
+    "vue-tsc": "^3.3.13"
+  },
+  "dependencies": {
+    "@portal/shared": "*",
+    "@tanstack/vue-virtual": "^3.13.45",
+    "maplibre-gl": "^6.14.0",
+    "pinia": "^4.0.3",
+    "socket.io-client": "^4.8.4",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "zod": "^4.6.7"
+  }
+}

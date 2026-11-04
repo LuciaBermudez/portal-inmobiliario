@@ -6,6 +6,7 @@ import { importsApi, uploadImport } from '@/api/imports';
 
 const STATUS_RANK: Record<ImportStatus, number> = { queued: 0, processing: 1, completed: 2, failed: 2 };
 
+/** Los eventos WebSocket pueden llegar desordenados: nunca retrocedemos el progreso mostrado. */
 export function isNewer(candidate: ImportJob, current: ImportJob | undefined): boolean {
   if (!current) return true;
   const rankDiff = STATUS_RANK[candidate.status] - STATUS_RANK[current.status];
@@ -20,7 +21,7 @@ export const useImportsStore = defineStore('imports', () => {
   const error = ref<string | null>(null);
   const errorsByJob = ref<Record<string, ImportRowErrorDto[]>>({});
   const upload = reactive({ active: false, progress: 0, error: null as string | null });
-
+  /** Sube cada vez que una importación termina: el mapa recarga sus teselas. */
   const tilesVersion = ref(0);
 
   const jobs = computed(() => order.value.map((id) => byId.value[id]).filter((j): j is ImportJob => j !== undefined));

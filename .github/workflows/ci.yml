@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Tipos · Tests unitarios · Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  integration:
+    name: Tests de integración (PostgreSQL + PostGIS reales)
+    runs-on: ubuntu-24.04
+    needs: quality
+    env:
+      TEST_DATABASE_URL: postgres://portal:portal@localhost:5432/portal_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # El runner trae PostgreSQL 16 instalado (detenido): se agrega PostGIS y se crean usuario y bases
+      # con el mismo script que en desarrollo local.
+      - name: Instalar PostGIS y preparar la base
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16-postgis-3
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -f backend/scripts/setup-local-db.sql
+      - run: npm ci
+      - run: npm run test:integration
